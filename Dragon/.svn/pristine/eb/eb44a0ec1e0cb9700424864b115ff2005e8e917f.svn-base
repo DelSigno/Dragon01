@@ -1,0 +1,43 @@
+package com.dragon.android;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import android.content.Context;
+
+import com.dragon.android.framework.Game;
+import com.dragon.android.framework.OrthoCamera;
+
+public class DragonMainMenu extends Game {
+
+	private OrthoCamera camera;
+	
+	public DragonMainMenu(Context context) {
+		super(context, 1);
+	}
+
+	@Override
+	public void onDrawFrame(GL10 arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onSurfaceChanged(GL10 unused, int width, int height) {
+		camera = new OrthoCamera(1, width, height);
+
+	}
+
+	@Override
+	public void onSurfaceCreated(GL10 arg0, EGLConfig arg1) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onHear() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

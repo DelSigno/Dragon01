@@ -1,0 +1,49 @@
+package com.dragon.android.framework;
+
+import com.dragon.android.data.Vec2;
+
+public class InputActions {
+	
+	public interface InputAction{
+		public Vec2 get();
+		public String type();
+	}
+	
+	public class Press implements InputAction{
+		private Vec2 pressPos;
+
+		public Press(Vec2 pressPos){
+			this.pressPos = pressPos;
+		}
+		
+		@Override
+		public Vec2 get(){
+			return pressPos;
+		}
+
+		@Override
+		public String type() {
+			return "press";
+		}
+	}
+	
+	public class Release implements InputAction{
+
+		private Vec2 releasePos;
+
+		public Release(Vec2 pressPos){
+			this.releasePos = pressPos;
+		}
+		
+		@Override
+		public Vec2 get(){
+			return releasePos;
+		}
+
+		@Override
+		public String type() {
+			return "release";
+		}
+		
+	}
+}

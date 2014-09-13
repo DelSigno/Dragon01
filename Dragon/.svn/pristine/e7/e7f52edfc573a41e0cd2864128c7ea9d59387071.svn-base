@@ -1,0 +1,26 @@
+package com.dragon.android.util;
+
+import com.dragon.android.data.VertexArray;
+
+public class TextureMapVertexCreator {
+	
+	public static VertexArray createTextureVertexArray(int xDim,int yDim){
+		
+		int totalNodes = (xDim + 1) * (yDim + 1);
+		float xDiv = 1.0f/(float)xDim;
+		float yDiv = 1.0f/(float)yDim;
+		float[] vertexData = new float[totalNodes *2];
+		int offset = 0;
+		
+		for (float i = 1; i >= 0; i -= yDiv){
+			for (float j = 0; j <= 1; j += xDiv){
+				vertexData[offset++] = j;
+				vertexData[offset++] = i;
+			}
+		}
+		return new VertexArray(vertexData,false);
+	}
+	
+	
+}
+

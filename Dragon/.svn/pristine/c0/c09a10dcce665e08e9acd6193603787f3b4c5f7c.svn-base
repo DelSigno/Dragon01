@@ -1,0 +1,99 @@
+package com.dragon.android.objects;
+
+import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glDrawArrays;
+
+import android.util.FloatMath;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import com.dragon.android.programs.ShaderProgram;
+import com.dragon.android.util.Logger;
+
+public class Circle implements Drawable{
+	
+	//MOVEMENT VECTORS
+	private Vec2 position;
+	private Vec2 velocity;
+	private Vec2 acceleration;
+	
+	private static final Vec2 IACC = new Vec2(.1f,.1f);
+	
+	
+	//PROPERTIES
+	private static String TAG = "Circle";
+	private float radius;
+	private static int EDGES = 22;
+	private static float RENDERLEVEL = -0.1f;
+	private static final int POSITION_COMPONENT_COUNT = 2;
+	private static final int BYTES_PER_FLOAT = 4;
+	private static final int STRIDE = POSITION_COMPONENT_COUNT * BYTES_PER_FLOAT;
+	
+	//VERTEX
+	private final float[] vertexData;
+	private final VertexArray vertexArray;
+	
+	//TARGET
+	private Vec2 target;
+	
+	public Circle(Vec2 iPos,float iRadius){
+		
+		this.position = iPos;
+		this.radius = iRadius;
+		this.target = iPos;
+		
+		this.velocity = new Vec2(0.0f,0.0f);
+		this.acceleration = IACC;
+		
+		//Builds shape
+		vertexData = new float[(EDGES + 2) * POSITION_COMPONENT_COUNT];
+		int offset = 0;
+		vertexData[offset++] = 0.0f;
+		vertexData[offset++] = 0.0f;
+		
+		for (int i = 0; i <= EDGES ; i++) {
+			float angleInRadians = ((float) i / (float) EDGES) * ((float) Math.PI * 2f);
+			float xPosition = radius * FloatMath.cos(angleInRadians);
+			float yPosition = radius * FloatMath.sin(angleInRadians);
+			vertexData[offset++] = xPosition;
+			vertexData[offset++] = yPosition;
+
+		}
+		
+		
+		
+		vertexArray = new VertexArray(vertexData);
+		
+		
+	}
+	
+	public void bindData(ShaderProgram program){
+		//loads appropriate vertex information into openGL
+		vertexArray.setVertexAttribPointer(0, program.getPositionAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+	}
+	
+	public Vec2 getPosition(){
+		return position;
+	}
+	
+	public void setTarget(Vec2 target){
+		this.target = target;
+	}
+	
+	public void move(){
+		position.move(this.velocity);
+		if (position.getDistanceTo(target) < velocity.getMagnitude()){
+			position = target;
+			velocity.zeroOut();
+		}else{
+			velocity.move(position.getDirectionTo(target).compMul(acceleration));
+		}
+	}
+	
+	@Override
+	public void draw() {
+		glDrawArrays(GL_TRIANGLE_FAN, 0, (EDGES + 2));
+		
+	}
+
+}

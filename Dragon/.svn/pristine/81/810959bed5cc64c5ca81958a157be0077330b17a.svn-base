@@ -1,0 +1,95 @@
+package com.dragon.android.objects;
+
+import com.dragon.android.data.IndiceArray;
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import com.dragon.android.framework.OrthoCamera;
+import com.dragon.android.objects.geometry.Rectangle;
+import com.dragon.android.objects.geometry.Square;
+import com.dragon.android.programs.ShaderProgram;
+import com.dragon.android.programs.TextureShader2DProgram;
+import com.dragon.android.util.Logger;
+import com.dragon.android.util.TextureHandler;
+import static android.opengl.GLES20.*;
+import static android.opengl.Matrix.multiplyMM;
+import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.translateM;
+
+import android.content.Context;
+import android.view.View;
+
+public class Background implements DrawCollection {
+
+	
+	//TAG
+	private static String TAG = "Background";
+	//TEXTURE AND PROGRAM
+	private final int texture;
+	private TextureShader2DProgram program;
+	
+	//CONSTANTS
+	private static final int BYTES_PER_FLOAT = 4;
+	private static final int BYTES_PER_INT = 4;
+	private static final int TRIS_COUNT = 2;
+	private static final int POSITION_COMPONENT_COUNT = 2;
+	private static final int TEXTURE_COMPONENT_COUNT = 2;
+	
+	//CAMERA
+	private OrthoCamera camera;
+	
+	
+	//VERTEX AND INDICES
+	private VertexArray vertexArray;
+	private VertexArray textureArray;
+	private IndiceArray indiceArray = new IndiceArray(new short[]{0,1,2,2,3,0},true);
+	
+	public Background(Context context,Vec2 size, TextureShader2DProgram shaderProgram, int resourceId){
+		texture = TextureHandler.loadTexture(context, resourceId);
+		TextureHandler.setPrettySettings(texture);
+		this.program = shaderProgram;
+		
+		//returns the vertices of a square
+		vertexArray = new Rectangle(size).getVertexArray();
+		vertexArray.bindToBuffer();
+		
+		//binds the texture array to a vbo
+		textureArray = new Square(1).getVertexArray();
+		textureArray.bindToBuffer();
+			
+	}
+	
+	//very expensive call. Don't use often. Change scale if possible
+	public void setSize(Vec2 newSize){
+		vertexArray = new Rectangle(newSize).getVertexArray();
+	}
+	
+	@Override
+	public void draw() {
+		
+		
+		//Logger.loggerVerbose(TAG, "Binding camera");
+		program.setuMatrix(camera.getCamera());
+		
+		//Logger.loggerVerbose(TAG, "Begging draw");
+		glDrawElements(GL_TRIANGLES,TRIS_COUNT * 3,GL_UNSIGNED_SHORT, 0);
+	}
+
+	@Override
+	public void bindData(OrthoCamera iCamera) {
+		
+		//Logger.loggerVerbose(TAG, "Begging bind data");
+		
+		program.useProgram();
+		
+		vertexArray.setActiveVBO(program.getPositionCoordinatesAttributeLocation(), TRIS_COUNT, POSITION_COMPONENT_COUNT * BYTES_PER_FLOAT, 0);
+		textureArray.setActiveVBO(program.getTextureCoordinatesAttributeLocation(), TRIS_COUNT, TEXTURE_COMPONENT_COUNT * BYTES_PER_FLOAT, 0);
+		
+		indiceArray.setActiveIBO();
+		
+		this.camera = iCamera;
+		
+		program.setTextureId(texture);
+
+	}
+
+}

@@ -1,0 +1,98 @@
+package com.dragon.android.util;
+
+import java.util.Arrays;
+import java.util.HashMap;
+
+import com.dragon.android.data.VertexArray;
+
+public class SymmetricalTextureVertexMapper {
+	//HASHMAP
+	private static HashMap<String,Integer> letterLookup = new HashMap<String,Integer>(){{
+		put(";",56);put(":",57);put("-",58);put("_",59);put("\"",60);put("(",61);put(")",62);
+		put("w",48);put("x",49);put("y",50);put("z",51);put(".",52);put(",",53);put("!",54);put("?",55);
+		put("o",40);put("p",41);put("q",42);put("r",43);put("s",44);put("t",45);put("u",46);put("v",47);
+		put("g",32);put("h",33);put("i",34);put("j",35);put("k",36);put("l",37);put("m",38);put("n",39);
+		put("Y",24);put("Z",25);put("a",26);put("b",27);put("c",28);put("d",29);put("e",30);put("f",31);
+		put("Q",16);put("R",17);put("S",18);put("T",19);put("U",20);put("V",21);put("W",22);put("X",23);
+		put("I",8);put("J",9);put("K",10);put("L",11);put("M",12);put("N",13);put("O",14);put("P",15);
+		put("A",0);put("B",1);put("C",2);put("D",3);put("E",4);put("F",5);put("G",6);put("H",7);
+		
+	}
+	@Override
+	public Integer get(Object k) {
+		return containsKey(k) ? super.get(k) : 63;
+	}};
+	//CONSTANT
+	private static final String TAG = "SymmetricalTextureVertexmapper";
+
+	private static int POSITION_COMPONENT_COUNT = 2;
+	private static int VERTEX_PER_NUMBER = 6;
+		
+	public static float[] generateMap(int subSquaresLen){
+		
+		int offset = 0;
+		int totalSquares = (subSquaresLen*subSquaresLen);
+		float[] vertexData = new float[ totalSquares * POSITION_COMPONENT_COUNT * VERTEX_PER_NUMBER];
+		float division = 1.0f / (float)subSquaresLen;
+		
+		
+		for (int i = 0; i < totalSquares;i++){
+			//vertex 1 : S and T
+			vertexData[offset++] = ((float)(i%subSquaresLen) * division);
+			vertexData[offset++] = 1 - ((float)(i/subSquaresLen) * division);
+			//vertex 2 : S and T
+			vertexData[offset++] = ((float)((i%subSquaresLen)+1) * division);
+			vertexData[offset++] = 1 - ((float)(i/subSquaresLen) * division);
+			//vertex 3 : S and T
+			vertexData[offset++] = ((float)((i%subSquaresLen)+1) * division);
+			vertexData[offset++] = 1 - ((float)((i/subSquaresLen)+1) * division);
+			//vertex 4 : S and T
+			vertexData[offset++] = ((float)(i%subSquaresLen) * division);
+			vertexData[offset++] = 1 - ((float)(i/subSquaresLen) * division);
+			//vertex 5 : S and T
+			vertexData[offset++] = ((float)((i%subSquaresLen)+1) * division);
+			vertexData[offset++] = 1 - ((float)((i/subSquaresLen)+1) * division);
+			//vertex 6 : S and T
+			vertexData[offset++] = ((float)(i%subSquaresLen) * division);
+			vertexData[offset++] = 1 - ((float)((i/subSquaresLen)+1) * division);
+		}
+		
+		return vertexData;
+	}
+
+	static final float[] eightbyeight = generateMap(8);
+	
+	private static float[] getLetterVerts(String letter){
+		int offset = letterLookup.get(letter) * (VERTEX_PER_NUMBER * POSITION_COMPONENT_COUNT);
+		Logger.loggerVerbose(TAG, "Offset: " + letter + "|" + offset);
+		return new float[] {eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++],
+							eightbyeight[offset++]};
+	}
+	public static VertexArray generateTextureVertexArray(String text){
+		
+		int lsb = 0;
+		float[] vertexData = null;
+		int counter = 0;
+		
+		Logger.loggerVerbose(TAG, Arrays.toString(eightbyeight));
+		
+		for(int i = 0; i < text.length(); i++)	{
+			
+			vertexData = NumberHandler.addArrays(getLetterVerts(Character.toString(text.charAt(i))),vertexData);
+		}
+		Logger.loggerVerbose(TAG, Arrays.toString(vertexData));
+		
+		return new VertexArray(vertexData);
+	}
+
+}

@@ -1,0 +1,17 @@
+package com.dragon.android.objects;
+
+public class ExpandingDragon implements DrawCollection {
+
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

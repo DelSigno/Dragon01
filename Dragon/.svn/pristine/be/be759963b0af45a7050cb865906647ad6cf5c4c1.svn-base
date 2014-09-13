@@ -1,0 +1,187 @@
+package com.dragon.android.util;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+
+public class NumberHandler {
+	
+	//CONSTANT
+	private static final String TAG = "NumberHandler";
+	private static float THIRD = 1.0f/3.0f;
+	private static float TTHIRD = 2*THIRD;
+	private static int POSITION_COMPONENT_COUNT = 2;
+	private static int VERTEX_PER_NUMBER = 6;
+	
+	//TEXTURE VERTEX DATAS
+	// S, T                                              //Position of 0
+
+	private static float[] positionTexData= new float[] {TTHIRD, THIRD,
+														 1, THIRD,
+														 1, 0,
+														 TTHIRD, THIRD,
+														 1, 0,
+														 TTHIRD, 0,
+														 //Position of 1
+														 0, 1,
+														 THIRD, 1,
+														 THIRD, TTHIRD,
+														 0, 1,
+														 THIRD, TTHIRD,
+														 0, TTHIRD,
+														 //Position of 2
+														 THIRD, 1,
+														 TTHIRD, 1,
+														 TTHIRD, TTHIRD,
+														 THIRD, 1,
+														 TTHIRD, TTHIRD,
+														 THIRD, TTHIRD,		
+														 //Position of 3
+														 TTHIRD, 1,
+														 1, 1,
+														 1, TTHIRD,
+														 TTHIRD, 1,
+														 1, TTHIRD,
+														 TTHIRD, TTHIRD,
+														 //Position of 4
+														 0, TTHIRD,
+														 THIRD, TTHIRD,
+														 THIRD, THIRD,
+														 0, TTHIRD,
+														 THIRD, THIRD,
+														 0, THIRD,
+														 //Position of 5
+														 THIRD, TTHIRD,
+														 TTHIRD, TTHIRD,
+														 TTHIRD, THIRD,
+														 THIRD, TTHIRD,
+														 TTHIRD, THIRD,
+														 THIRD, THIRD,
+														 //Position of 6
+														 TTHIRD, TTHIRD,
+														 1, TTHIRD,
+														 1, THIRD,
+														 TTHIRD, TTHIRD,
+														 1, THIRD,
+														 TTHIRD, THIRD,		
+														//Position of 7
+														 0, THIRD,
+														 THIRD, THIRD,
+														 THIRD, 0,
+														 0, THIRD,
+														 THIRD, 0,
+														 0, 0,
+														 //Position of 8
+														 THIRD, THIRD,
+														 TTHIRD, THIRD,
+														 TTHIRD, 0,
+														 THIRD, THIRD,
+														 TTHIRD, 0,
+														 THIRD, 0,
+														 //Position of 9
+														 1, -THIRD,
+														 1 + THIRD, -THIRD,
+														 1 + THIRD, -TTHIRD,
+														 1, -THIRD,
+														 1 + THIRD, -TTHIRD,
+														 1, -TTHIRD, 
+										       			 };
+										       			 
+
+	
+	//input a number and returns a vertex array depicting that specific numbers vertices
+	//gives leading zeros if digits is larger then length of number
+	public static VertexArray generateTextureVertexArray(int number,int digits){
+		
+		int lsb = 0;
+		float[] vertexData = null;
+		int counter = 0;
+		
+		//gets numbers in order
+		while (number > 0) {
+		    lsb = number % 10;
+		    vertexData = addArrays(getNumberVerts(lsb),vertexData);
+		    number = (int)number / 10;
+		    
+		    //Logger.loggerVerbose(TAG, "Found digit lsb|number  :" + lsb + " | " + number);
+		    
+		    counter++;
+		}
+		
+		//this is what fills in the remaining zeros
+		while (counter < digits){
+			vertexData = addArrays(getNumberVerts(0),vertexData);
+			counter++;
+		}
+		//Logger.loggerVerbose(TAG, Arrays.toString(vertexData));
+		return new VertexArray(vertexData,false);
+	}
+	
+	
+	//Only generates with bottom right justification
+	public static VertexArray generateDigitVertexArray(Vec2 letterSize, int digits){
+		
+		float[] vertexPositionData = new float[digits * (VERTEX_PER_NUMBER * POSITION_COMPONENT_COUNT)];
+		int offset = 0;
+		for(int i = 0; i < digits; i++){
+			//vertex 1
+			vertexPositionData[offset++] = -((digits-i) * letterSize.getX());
+			vertexPositionData[offset++] = 0;
+			//vertex 2
+			vertexPositionData[offset++] = -((digits-(i+1)) * letterSize.getX());
+			vertexPositionData[offset++] = 0;
+			//vertex 3
+			vertexPositionData[offset++] = -((digits-(i+1)) * letterSize.getX());
+			vertexPositionData[offset++] = letterSize.getY();
+			//vertex 4
+			vertexPositionData[offset++] = -((digits-(i)) * letterSize.getX());
+			vertexPositionData[offset++] = 0;
+			//vertex 5
+			vertexPositionData[offset++] = -((digits-(i+1)) * letterSize.getX());
+			vertexPositionData[offset++] = letterSize.getY();;
+			//vertex 6
+			vertexPositionData[offset++] = -((digits-(i)) * letterSize.getX());
+			vertexPositionData[offset++] = letterSize.getY();;
+		}
+		
+		return new VertexArray(vertexPositionData,false);
+		
+		
+	}
+	
+	//input a number 0-9 and it returns vertices for that number
+	private static float[] getNumberVerts(int number){
+		int offset = number * (VERTEX_PER_NUMBER * POSITION_COMPONENT_COUNT);
+		return new float[] {positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++],
+							positionTexData[offset++]};
+		
+	}
+
+	public static float[] addArrays(float[] A, float[] B) {
+		
+		if ((B != null)&&(A != null)){
+			int aLen = A.length;
+			int bLen = B.length;
+			float [] C = new float[aLen + bLen];
+			System.arraycopy(A, 0, C, 0, aLen);
+			System.arraycopy(B, 0, C, aLen, bLen);
+			  
+			return C;
+		}else{
+			return A;
+		}
+	}
+	
+}

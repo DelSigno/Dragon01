@@ -1,0 +1,165 @@
+package com.dragon.android.framework;
+
+import android.view.DragEvent;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnDragListener;
+import android.view.View.OnKeyListener;
+import android.view.View.OnTouchListener;
+
+public class InputListener implements OnTouchListener, OnDragListener, OnKeyListener{
+
+	//**********************VARIABLES************
+	//POINTERS
+	private PointerPool pointerPool;
+	private final int totalPointers;
+	
+	
+	
+	
+	//**********************MAIN BODY************
+	public InputListener(int totalPointers){
+		
+		this.totalPointers = totalPointers;
+	}
+	
+	public 
+ 
+    
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		
+		int action = event.getAction();
+        int pointerIndex = event.getActionIndex();
+        int pointerId = event.getPointerId(pointerIndex);
+        
+        
+		switch (action) {
+        case MotionEvent.ACTION_DOWN:
+        	pointerPool = new PointerPool(totalPointers);
+        	pointerPool.addPointer(new Pointer(event.getX(pointerIndex), event.getY(pointerIndex), pointerId, pointerIndex));
+        	
+        	break;
+        	
+        case MotionEvent.ACTION_POINTER_DOWN:
+            touched[pointerId] = true;
+            x[pointerId] = (int)event.getX(pointerIndex);
+            y[pointerId] = (int)event.getY(pointerIndex);
+            break;
+
+        case MotionEvent.ACTION_UP:          
+        case MotionEvent.ACTION_POINTER_UP:
+        case MotionEvent.ACTION_CANCEL:
+            touched[pointerId] = false; 
+            x[pointerId] = (int)event.getX(pointerIndex);
+            y[pointerId] = (int)event.getY(pointerIndex);
+            break;
+
+        case MotionEvent.ACTION_MOVE:
+            int pointerCount = event.getPointerCount();
+            for (int i = 0; i < pointerCount; i++) {
+                pointerIndex = i;
+                pointerId = event.getPointerId(pointerIndex);
+                x[pointerId] = (int)event.getX(pointerIndex);
+                y[pointerId] = (int)event.getY(pointerIndex);
+            }
+            break;
+        }
+		
+		return false;
+	}
+	
+
+	@Override
+	public boolean onKey(View v, int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onDrag(View v, DragEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	
+	//******************************CLASSES***********************
+	private class Pointer{
+		private float x;
+		private float y;
+		private int id;
+		private int index;
+		private boolean touched;
+		
+		public Pointer(float iX, float iY, int iId , int iIndex)
+		{
+			x = iX;
+			y = iY;
+			id = iId;
+			index = iIndex;
+		}
+		
+		public void press(){
+			touched = true;
+		}
+		public void release(){
+			touched = false;
+		}
+		public boolean isTouched(){
+			return touched;
+		}	
+		public void setY(float nY){
+			y = nY;
+		}
+		public void setX(float nX){
+			x = nX;
+		}
+		public void setID(int nID){
+			id = nID;
+		}
+		public void setIndex(int nIndex){
+			index = nIndex;
+		}	
+		public float getY(){
+			return y;
+		}
+		public float getX(){
+			return x;
+		}
+		public int getID(){
+			return id;
+		}
+		public int getIndex(){
+			return index;
+		}
+	}
+
+	private class PointerPool {
+		
+		private final Pointer[] pointers;
+		
+		private int index = 0;
+		
+		public PointerPool(int iPointerCount){
+			
+			pointers = new Pointer[iPointerCount];
+			
+		}
+		
+		public void addPointer(Pointer newPointer){
+			pointers[index++] = newPointer;
+		}
+		
+		public void removeLastPointer(){
+			pointers[index--] = null;
+		}
+		
+		public Pointer getPointer(int location){
+			return pointers[location];
+		}
+		
+	}
+	
+}
+

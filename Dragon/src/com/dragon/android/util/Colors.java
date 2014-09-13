@@ -1,0 +1,17 @@
+package com.dragon.android.util;
+
+public class Colors {
+	public static final float[] GREEN = {0.0f, 1.0f, 0.0f, 1.0f};
+	public static final float[] RED = {1.0f, 0.0f, 0.0f, 1.0f};
+	public static final float[] CIRCLEBG = toDecimalFormat(33,251,255,1);
+	public static final float[] SQUARERED = toDecimalFormat(255,95,0,1);
+
+	private static float[] toDecimalFormat(float red, float green, float blue, float alpha){
+		
+		red = red / 255;
+		blue = blue / 255;
+		green = green / 255;
+		
+		return new float[] {red,green,blue,alpha};
+	}
+}

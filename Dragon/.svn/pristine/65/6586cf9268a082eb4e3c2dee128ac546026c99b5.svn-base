@@ -1,0 +1,223 @@
+package com.dragon.android.framework;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.framework.InputActions.InputAction;
+import com.dragon.android.framework.InputActions.Press;
+import com.dragon.android.framework.InputActions.Release;
+
+
+import android.view.DragEvent;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnDragListener;
+import android.view.View.OnKeyListener;
+import android.view.View.OnTouchListener;
+
+public class InputListener implements OnTouchListener, OnDragListener, OnKeyListener{
+
+	//**********************VARIABLES************
+	//POINTERS
+	private PointerPool pointerPool;
+	private final int totalPointers;
+	
+	//COUNTERS
+	private int activePointers;
+	
+	//HEARER 
+	private Hearer whyAmIYellingAtYou;
+	//ACTIONS
+	List<InputAction> actions = new ArrayList<InputAction>();
+	
+	
+	//**********************MAIN BODY************
+	public InputListener(int totalPointers,Hearer iWhyAmIYellingAtYou){
+		
+		this.whyAmIYellingAtYou = iWhyAmIYellingAtYou;
+		this.totalPointers = totalPointers;
+	}
+	
+	public int getPointerCount(){
+		return pointerPool.size();
+	}
+ 
+	//Returns a normalized coordinate to the specified view
+    private Vec2 normalizeToView(View v, Vec2 pointerLocation){	
+    	//Zero centered with standard quadrants, just how we like it!
+    	final float normalizedX = (pointerLocation.getX() / (float) v.getWidth()) * 2 - 1;
+		final float normalizedY = -((pointerLocation.getY() / (float) v.getHeight()) * 2 - 1);
+		return new Vec2(normalizedX,normalizedY);
+    }
+    
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		
+		int action = event.getAction();
+        int pointerIndex = event.getActionIndex();
+        int pointerId = event.getPointerId(pointerIndex);
+        Vec2 normalized;
+        
+        
+		switch (action) {
+        case MotionEvent.ACTION_DOWN:
+        	//This is the beginning of a new gesture
+        	//Sets the pointer pool as a completely new set of pointers, also set the active pointers to 1
+        	pointerPool = new PointerPool(totalPointers);
+        	
+        	//Adds the first pointer after normalizing it
+        	normalized = normalizeToView(v,new Vec2(event.getX(pointerIndex), event.getY(pointerIndex)));
+        	pointerPool.addPointer(new Pointer(normalized, pointerId, pointerIndex));
+        	
+        	//Recognize a press action and add it to action list
+        	actions.add(new Press(pointerPool.getPointer(pointerIndex).getLoc()));
+        	break;
+        	
+        case MotionEvent.ACTION_POINTER_DOWN:
+        	//This is the event that another pointers has been pressed
+        	
+        	//checks to see if the pointer is less than or equal to total allowed pointers
+            //if it is than it registers the new pointer as valid and adds it to our list
+            if (pointerIndex < totalPointers){
+            	
+            	//Add a new pointer to our list
+            	normalized = normalizeToView(v,new Vec2(event.getX(pointerIndex), event.getY(pointerIndex)));
+            	pointerPool.addPointer(new Pointer(normalized, pointerId, pointerIndex));
+            }
+        	
+            break;
+
+        case MotionEvent.ACTION_UP:   
+        	//This is the action that represents our entire gesture has ended, All fingers are up.
+        	//Recognize a press action and add it to action list
+        	actions.add(new Release(pointerPool.getPointer(pointerIndex).getLoc()));
+            break;
+        case MotionEvent.ACTION_POINTER_UP:
+        case MotionEvent.ACTION_CANCEL:
+        case MotionEvent.ACTION_MOVE:
+            int pointerCount = event.getPointerCount();
+            for (int i = 0; i < pointerCount; i++) {
+                pointerIndex = i;
+                normalized = normalizeToView(v,new Vec2(event.getX(pointerIndex), event.getY(pointerIndex)));
+                pointerPool.getPointer(pointerIndex).setLoc(normalized);
+            }
+            break;
+        }
+		
+		whyAmIYellingAtYou.onHear();
+		return false;
+	}
+	
+
+	@Override
+	public boolean onKey(View v, int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onDrag(View v, DragEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	
+	//******************************CLASSES***********************
+	private class Pointer{
+		private Vec2 position = new Vec2(0,0);
+		private int id;
+		private int index;
+		private boolean touched;
+		
+		public Pointer(float iX, float iY, int iId , int iIndex)
+		{
+			position.setX(iX);
+			position.setY(iY);
+			id = iId;
+			index = iIndex;
+		}
+		
+		public Pointer(Vec2 iPosition, int iId , int iIndex)
+		{
+			position = iPosition;
+			id = iId;
+			index = iIndex;
+		}
+		
+		
+		public void press(){
+			touched = true;
+		}
+		public void release(){
+			touched = false;
+		}
+		public boolean isTouched(){
+			return touched;
+		}	
+		public void setY(float nY){
+			position.setY(nY);
+		}
+		public void setX(float nX){
+			position.setX(nX);
+		}
+		public void setID(int nID){
+			id = nID;
+		}
+		public void setIndex(int nIndex){
+			index = nIndex;
+		}	
+		public float getY(){
+			return position.getY();
+		}
+		public float getX(){
+			return position.getX();
+		}
+		public Vec2 getLoc(){
+			return position;
+		}
+		public void setLoc(Vec2 nLoc){
+			position = nLoc;
+		}
+		public int getID(){
+			return id;
+		}
+		public int getIndex(){
+			return index;
+		}
+	}
+
+	//pointer pool resembles a stack, but not exactally
+	private class PointerPool {
+		
+		private final Pointer[] pointers;
+		
+		private int index = 0;
+		
+		public PointerPool(int iPointerCount){
+			
+			pointers = new Pointer[iPointerCount];
+			
+		}
+		
+		public int size() {
+			return index;
+		}
+
+		public void addPointer(Pointer newPointer){
+			pointers[index++] = newPointer;
+		}
+		
+		public void removeLastPointer(){
+			pointers[index--] = null;
+		}
+		
+		public Pointer getPointer(int location){
+			return pointers[location];
+		}
+		
+	}
+	
+}
+

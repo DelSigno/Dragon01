@@ -1,0 +1,20 @@
+package com.circleavoidthesquares.android.util;
+
+import android.util.Log;
+
+public class Logger {
+	private static final boolean VERBOSE = true;
+	private static final boolean DEBUGGING = true;
+	
+	public static void loggerVerbose(String tag, String message){
+		if (VERBOSE){
+			Log.v(tag,message);
+		}	
+	}
+	
+	public static void loggerDebug(String tag, String message) {
+		if (DEBUGGING){
+			Log.d(tag, message);
+		}
+	}
+}

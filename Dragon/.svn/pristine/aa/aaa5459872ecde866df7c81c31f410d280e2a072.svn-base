@@ -1,0 +1,20 @@
+package com.dragon.android.util;
+
+import com.dragon.android.data.VertexArray;
+
+public class VertexCreator {
+	public static VertexArray createVertexArrayCopies(int xDim, int yDim, int xNum, int yNum){
+		
+		float[] vertexData = new float[((xNum+1)*(yNum+1))*2];
+		
+		int offset = 0;
+		
+		for (float i = 1; i >= 0; i -= yDiv){
+			for (float j = 0; j <= 1; j += xDiv){
+				vertexData[offset++] = j;
+				vertexData[offset++] = i;
+			}
+		}
+		return new VertexArray(vertexData,false);
+	}
+}

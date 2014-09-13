@@ -1,0 +1,9 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+
+public interface DrawCollection extends Drawable {
+	
+	void bindData();
+	
+}

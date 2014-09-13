@@ -1,0 +1,127 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+import android.content.Context;
+
+import com.dragon.android.data.IndiceArray;
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import com.dragon.android.framework.OrthoCamera;
+import com.dragon.android.objects.geometry.Square;
+import com.dragon.android.programs.TextureShader2DProgram;
+import com.dragon.android.util.Logger;
+import com.dragon.android.util.TextureMapVertexCreator;
+
+public class ExpandingDragon implements DrawCollection {
+	
+	//CONSTANTS
+	private static final String TAG = "ExpandingDragon";
+	private static final long ANIMATION_SPEED = 30; //in milliseconds
+	private static final float BODY_NODE_SIZE = .15f;
+	private static final long RESPAWN_TIME =  (long) ((DragonHead.SPEED /BODY_NODE_SIZE) * 1000);
+	
+	//VARIABLES
+	private int totalNodes = 5;
+	private LinkedList<BodyNode> bodyNodes = new LinkedList<BodyNode>();
+	private DragonHead head;
+	private TextureShader2DProgram program;
+	private MercTimer newNodeDecider = new MercTimer(0, RESPAWN_TIME);
+	private Vec2 oldHeadPos = null;
+	private Vec2 nowHeadPos = null;
+	
+	//VERTEXSHIT
+	private VertexArray vertexArray;
+	private VertexArray textureVertexArray;
+	private IndiceArray indiceArray;
+	
+	//TEXURE
+	private int texture;
+	
+	
+	//************CODE*************************
+	public ExpandingDragon(Context context, TextureShader2DProgram program){
+		this.head = new DragonHead(context, program);
+		this.program = program;
+		
+		this.vertexArray = TextureMapVertexCreator.getHomeSquare(4,new Square(BODY_NODE_SIZE).getData());
+		this.vertexArray.bindToBuffer();
+		
+	}
+	
+	private void updateBody(){
+		
+		if (oldHeadPos == null){
+			oldHeadPos = head.getPosition();
+		} else {		
+			
+			if (newNodeDecider.pollTimer()) {
+				if (bodyNodes.size() == totalNodes){
+					bodyNodes.add(new BodyNode(oldHeadPos));
+					bodyNodes.removeFirst();
+					oldHeadPos = head.getPosition();
+				}else if ((bodyNodes.size() < totalNodes)) {
+					bodyNodes.add(new BodyNode(oldHeadPos));
+					oldHeadPos = head.getPosition();
+				}
+			}
+			
+			
+		}
+		
+		
+		
+		
+	}
+	
+ 	public boolean setTargeting(boolean nTarg){
+		return head.setTargeting(nTarg);
+		
+	}
+	
+	public void setTarget(Vec2 nTarg){
+		//Logger.loggerDebug(TAG, "We send this to target -> " + nTarg);
+
+		head.setTarget(nTarg);
+	}
+	
+	@Override
+	public void draw() {
+		for(BodyNode bNode : bodyNodes){
+			
+		}
+		
+		
+
+	}
+
+	public void expand(){
+		
+	}
+	@Override
+	public void bindData(OrthoCamera camera) {
+		//we just stick head hear because noone cares
+		head.bindData(camera);
+		head.draw();
+		
+		
+		
+	}
+	
+	private class BodyNode implements Drawable {
+		public Vec2 position;
+		private MercTimer mTimer = new MercTimer(12,ANIMATION_SPEED);
+		
+		public BodyNode(Vec2 iPos){
+			this.position = iPos;
+		}
+		@Override
+		public void draw() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+
+}

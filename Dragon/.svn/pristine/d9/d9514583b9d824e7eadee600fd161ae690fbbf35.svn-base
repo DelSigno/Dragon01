@@ -1,0 +1,33 @@
+package com.circleavoidthesquares.android.data;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
+import static android.opengl.GLES20.*;
+import static android.opengl.GLUtils.*;
+import static android.opengl.Matrix.*;
+
+public class VertexArray {
+
+	private static final int BYTES_PER_FLOAT = 4;
+	
+	private final FloatBuffer floatBuffer;
+	
+	//Builds a buffer from an array
+	public VertexArray(float[] vertexData) {
+		//This does mathy buffer shit. Honestly, I don't know what it means. I think this is what makes it fast
+		floatBuffer = ByteBuffer.allocateDirect(vertexData.length * BYTES_PER_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer().put(vertexData);
+	}
+	public void setVertexAttribPointer(int dataOffset, int attributeLocation,int componentCount, int stride) {
+		//Inital offset of the data in the buffer we are accessing
+		floatBuffer.position(dataOffset);
+		//Binds the componentCount number of items from floatBuffer to attributeLocation
+		glVertexAttribPointer(attributeLocation, componentCount, GL_FLOAT, false, stride, floatBuffer);
+		//Enables it as opposed to some constant default
+		glEnableVertexAttribArray(attributeLocation);
+		//Resets the buffer back to the initial position for next run
+		floatBuffer.position(0);
+	}
+
+}

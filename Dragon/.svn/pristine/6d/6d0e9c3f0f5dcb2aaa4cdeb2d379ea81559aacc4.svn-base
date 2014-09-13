@@ -1,0 +1,71 @@
+package com.dragon.android.hud;
+
+import static android.opengl.GLES20.GL_TRIANGLES;
+import static android.opengl.GLES20.glDrawArrays;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import com.dragon.android.fonts.Font;
+import com.dragon.android.objects.Drawable;
+import com.dragon.android.programs.TextureShader2DProgram;
+import com.dragon.android.util.NumberHandler;
+import com.dragon.android.util.TextTextureHandler;
+
+public class Text implements Drawable{
+
+	//PROPERTIES
+	private Vec2 position;
+	private String text;
+	private Vec2 size;
+	private Vec2 letterSize = new Vec2(0.1f, 0.1f);
+	private Font font;
+	
+	//COMPONENT COUNTING THINGS
+	private static final int POSITION_COMPONENT_COUNT = 2;
+	private static final int BYTES_PER_FLOAT = 4;
+	private static final int STRIDE = POSITION_COMPONENT_COUNT * BYTES_PER_FLOAT;
+	private static int VERTEX_PER_NUMBER = 6;
+
+	//VERTEXARRAY
+	private VertexArray textureCoords; 
+	private VertexArray positionCoords; 
+	
+	
+	//position correlates to brs
+	public Text(Vec2 iPosition, String iText,Vec2 iSize,Font iFont){
+		this.position = iPosition;
+		this.text = new StringBuilder(iText).reverse().toString();
+		this.size = iSize;
+		this.font = iFont;
+		
+		letterSize.setX(size.getX()/(float)text.length());
+		letterSize.setY(size.getY());
+
+		positionCoords = NumberHandler.generateDigitVertexArray(letterSize, text.length());
+		textureCoords = TextTextureHandler.generateTextureVertexArray(text,font.getLetterLookup(),font.getDivisionMapping());
+	}
+	
+	public void setText(String newText){
+		text = new StringBuilder(newText).reverse().toString();
+	}
+	
+	public void bindData(TextureShader2DProgram program){
+		//loads appropriate vertex information into openGL
+		positionCoords.setVertexAttribPointer(0, program.getPositionAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+		textureCoords.setVertexAttribPointer(0, program.getTextureCoordinatesAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+					
+	}
+	
+	@Override
+	public void draw() {
+		glDrawArrays(GL_TRIANGLES, 0, (text.length() * VERTEX_PER_NUMBER));
+	}
+
+	public Vec2 getPosition() {
+		
+		return position;
+	}
+	
+	
+
+}

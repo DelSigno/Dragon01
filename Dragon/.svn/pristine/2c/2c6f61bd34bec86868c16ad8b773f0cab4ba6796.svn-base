@@ -1,0 +1,20 @@
+package com.dragon.android.framework;
+
+import com.dragon.android.data.Vec2;
+
+public class InputActions {
+	
+	
+	public class Press{
+		private Vec2 pressPos;
+
+		public Press(Vec2 pressPos){
+			this.pressPos = pressPos;
+		}
+		
+		public Vec2 get(){
+			return pressPos;
+		}
+		
+	}
+}

@@ -1,0 +1,7 @@
+package com.circleavoidthesquares.android.objects;
+
+import com.circleavoidthesquares.android.programs.ShaderProgram;
+
+public interface Drawable {
+	void draw();
+}

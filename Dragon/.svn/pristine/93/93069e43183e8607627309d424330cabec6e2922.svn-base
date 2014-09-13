@@ -1,0 +1,49 @@
+package com.dragon.android.objects;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import com.dragon.android.objects.geometry.Square;
+import com.dragon.android.programs.ShaderProgram;
+import com.dragon.android.util.TextureHandler;
+import static android.opengl.GLES20.*;
+
+import android.content.Context;
+import android.view.View;
+
+public class Background implements DrawCollection {
+
+	private int texture;
+	private ShaderProgram program;
+	
+	//vertex and indice arrays
+	private VertexArray vertexArray;
+	private final VertexArray indiceArray = new VertexArray(new float[]{1,2,3,1,3,4},true, GL_ELEMENT_ARRAY_BUFFER);
+	
+	public Background(Context context, View view,ShaderProgram shaderProgram, int resourceId){
+		texture = TextureHandler.loadTexture(context, resourceId);
+		TextureHandler.setPrettySettings(texture);
+		this.program = shaderProgram;
+		
+		//returns the verticies of a square
+		vertexArray = new Square(new Vec2(view.getWidth(),view.getHeight())).getSquare();
+		vertexArray.bindToBuffer();
+			
+	}
+	
+	public void setSize(Vec2 newSize){
+		
+	}
+	
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

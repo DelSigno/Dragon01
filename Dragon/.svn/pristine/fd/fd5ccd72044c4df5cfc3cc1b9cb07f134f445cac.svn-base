@@ -1,0 +1,22 @@
+package com.dragon.android.objects.geometry;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import static android.opengl.GLES20.*;
+
+public class Square implements Shape{
+	
+	private VertexArray vertexArray;
+	
+	public Square(float size){
+	
+		vertexArray = new VertexArray(new float[]{-(size/2),-(size/2),
+												  (size/2),-(size/2),
+												  (size/2),(size/2),
+												  -(size/2),(size/2)},false);
+	}
+	
+	public VertexArray getVertexArray(){
+		return vertexArray;
+	}
+}

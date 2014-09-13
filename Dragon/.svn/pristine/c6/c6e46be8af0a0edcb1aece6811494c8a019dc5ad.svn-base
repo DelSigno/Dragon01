@@ -1,0 +1,97 @@
+package com.dragon.android.data;
+
+import android.util.FloatMath;
+
+import com.dragon.android.util.Logger;
+
+public class Vec2 {
+	private float x;
+	private float y;
+	
+	public Vec2(float x, float y){
+		this.x = x;
+		this.y = y;
+	}
+	
+	public Vec2(Vec2 vector){
+		this.x = vector.getX();
+		this.y = vector.getY();
+	}
+	
+	public float getX(){
+		return x;
+	}
+	
+	public float getY(){
+		return y;
+	}
+	
+	public void setX(float x){
+		this.x = x;
+	}
+	
+	public void setY(float y){
+		this.y = y;
+	}
+	
+	public void moveAngle(float distance,float angle){
+		this.x = this.x + distance*(float)Math.cos(angle);
+		this.y = this.y + distance*(float)Math.sin(angle);
+	}
+	
+	public void move(float x,float y){
+		this.x = this.x + x;
+		this.y = this.y + y;
+	}
+	
+	public void move(Vec2 vector){
+		this.x = this.x + vector.getX();
+		this.y = this.y + vector.getY();
+	}
+	
+	public Vec2 scalarMul(float c){
+		return new Vec2(this.x * c, this.y * c);
+	}
+	
+	public Vec2 compMul(Vec2 vector){
+		return new Vec2(this.x * vector.getX(), this.y * vector.getY());
+	}
+	
+	public float getMagnitude(){
+		return (float) Math.sqrt(Math.pow(this.getX(), 2) + Math.pow(this.getY(), 2));
+	}
+	
+	public void zeroOut(){
+		this.x = 0;
+		this.y = 0;
+	}
+	public Vec2 getDistanceVector(Vec2 vector){
+		Vec2 tempVector =  new Vec2((vector.getX() - this.x),(vector.getY() - this.y));
+		return tempVector;
+	}
+	
+	public float getDistanceTo(Vec2 vector){
+		Vec2 tempVector = this.getDistanceVector(vector);	
+		return (float) Math.sqrt(Math.pow(tempVector.getX(), 2) + Math.pow(tempVector.getY(), 2));
+	}
+	
+	public Vec2 getDirectionTo(Vec2 vector){
+		Vec2 tempVector = this.getDistanceVector(vector);
+		float dist = this.getDistanceTo(vector);
+		
+		if (dist == 0){
+			return new Vec2(0.0f,0.0f);
+		}else{
+			return new Vec2(tempVector.getX()/dist,tempVector.getY()/dist);
+		}
+		
+	}
+	
+	public float getAngle(){
+		return (float)Math.atan(y/x);
+	}
+	
+	public String log(){
+		return (Float.toString(x) + "|" + Float.toString(y));
+	}
+}

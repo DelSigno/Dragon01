@@ -1,0 +1,36 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+
+public class ExpandingDragon implements DrawCollection {
+	
+	private ArrayList<Drawable> bodyNodes = new ArrayList<Drawable>();
+	private DrawCollection head = new DrawCollection(){
+
+		@Override
+		public void draw() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void bindData() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	};
+	
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

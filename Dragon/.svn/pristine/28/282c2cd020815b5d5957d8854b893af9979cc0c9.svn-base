@@ -1,0 +1,310 @@
+package com.circleavoidthesquares.android;
+
+import static android.opengl.GLES20.*;
+import static android.opengl.Matrix.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import com.circleavoidthesquares.android.util.MatrixHandler;
+import com.circleavoidthesquares.android.R;
+import com.circleavoidthesquares.android.data.Vec2;
+import com.circleavoidthesquares.android.hud.NumberBox;
+import com.circleavoidthesquares.android.objects.Circle;
+import com.circleavoidthesquares.android.objects.Square;
+import com.circleavoidthesquares.android.programs.ColorShader2DProgram;
+import com.circleavoidthesquares.android.programs.TextureShader2DProgram;
+import com.circleavoidthesquares.android.util.Colors;
+import com.circleavoidthesquares.android.util.Font;
+import com.circleavoidthesquares.android.util.Logger;
+import com.circleavoidthesquares.android.util.TextureHandler;
+
+import static com.circleavoidthesquares.android.util.ProbabilityHandler.*;
+import com.circleavoidthesquares.android.util.TextResourceReader;
+import com.circleavoidthesquares.android.util.ShaderHandler;
+
+import android.content.*;
+import android.opengl.GLSurfaceView.Renderer;
+
+public class CircleAvoidTheSquaresRenderer implements Renderer {
+	
+	//CONTEXT and TAG 
+	private final Context context;
+	private static final String TAG = "CircleAvoidTheSquareRenderer" ;
+	
+	//SCREEN DIMENSIONS
+	private float screenWidth;
+	private float screenHeight;
+	private float screenLeft;
+	private float screenRight;
+	private float screenTop;
+	private float screenBottom;
+	
+	//SETTINGS
+	private final float zoom = 1f;
+	private float spawnPercent = 0.05f;
+	private float minSquareSpeed = .005f;
+	private float maxSquareSpeed = .08f;
+	private float speedScale = 1.0f;
+	
+	
+	private static float FINGEROFFSET = .25f;
+	
+	//TIMES
+	private long endTime;
+	private long startTime;
+	private long dt;
+	
+	private long fpsEndTime;
+	private long fpsStartTime;
+	
+	//PROGRAMS
+	private ColorShader2DProgram colorShaderProgram;
+	private TextureShader2DProgram textureShaderProgram;
+	
+	//MATRICIES
+	private final float[] projectionMatrix = new float[16]; //Stores the proverbial camera
+	private float[] modelMatrix = new float[16]; //Used for translations
+	private float[] translationMatrix = new float[16]; //Used for translations...again
+	private float[] modelViewProjectionMatrix = new float[16]; //used to store result of camera after translation
+	
+	//SQUARES
+	private ArrayList<Square> squareArmy = new ArrayList<Square>();
+	private ArrayList<Integer> squaresToRemove = new ArrayList<Integer>();
+	private float squareRadius = .075f;
+	private int squareCounter = 0;
+	
+	//CIRCLE
+	private static final float CIRCLE_RADIUS = .075f;
+	private Circle theCircle = new Circle(new Vec2(0,-1.25f), CIRCLE_RADIUS);
+	
+	//TEXTS
+	private NumberBox scoreboard;
+	private NumberBox highscoreBoard;
+	private NumberBox frameCounter;
+	
+	private int fps = 0;
+	private int highscore = 0;
+
+	//FONTS
+	private Font theOnlyFont; 
+	
+	//PREFERENCES
+	private SharedPreferences preferences;
+	private SharedPreferences.Editor prefEditor;
+	
+	public CircleAvoidTheSquaresRenderer(Context context) {
+		this.context = context;
+		this.preferences = context.getSharedPreferences("cats",Context.MODE_PRIVATE);
+		prefEditor = preferences.edit();
+	}
+
+	@Override
+	public void onDrawFrame(GL10 unused) {
+		
+		
+		//***Limits frame rate to 60fps***
+		endTime = System.currentTimeMillis();
+	    dt = endTime - startTime;
+	    
+	    if (dt < 17)
+			try {
+				Thread.sleep((long)(17 - dt),7);
+			} catch (InterruptedException e) {
+				Logger.loggerDebug(TAG, "Failed To sleep!");
+				e.printStackTrace();
+			}
+	    startTime = System.currentTimeMillis();
+	    //***Finished limiting framerate***
+	    
+	    //+++Framerate counter
+	    fpsEndTime = System.currentTimeMillis();
+	    fps = (int)(1000/(fpsEndTime-fpsStartTime));
+	    fpsStartTime = System.currentTimeMillis();
+	    //--end of framerate counter
+		
+		
+		
+		//+++Spawn Mobs
+		if (bernoulli((float)(spawnPercent + ((float)(squareCounter)/10000.0f)))){
+			squareArmy.add(new Square(randVec2(screenLeft, screenRight, screenTop, screenTop + 5),
+									  randVec2(0,0,-minSquareSpeed * speedScale,-maxSquareSpeed * speedScale), 
+									  new Vec2(0,0),
+									  squareRadius));
+			squareCounter++;
+		}
+		//---Finished Spawning Mobs	
+		
+		//+++Moves and deletes Mobs
+		int armyIterator = 0;
+		while(squareArmy.size() > armyIterator){
+			squareArmy.get(armyIterator).move();
+			if ((squareArmy.get(armyIterator).getPosition().getY()) < (screenBottom)){
+				squareArmy.remove(armyIterator);
+			}else{
+				//checks for collision as well as moves to next square
+				if (squareArmy.get(armyIterator).getPosition().getDistanceTo(theCircle.getPosition()) < (squareRadius + CIRCLE_RADIUS)){
+					//square has collided with circle
+					//reset game
+					if (squareCounter > highscore){
+						highscore = squareCounter;
+						prefEditor.putInt("highscore",highscore);
+						prefEditor.commit();
+					}
+					squareCounter = squareCounter - (squareCounter/10);
+					squareArmy.clear();
+				}else{
+					armyIterator++;
+				}
+			}
+		}
+		
+			
+		//---Finished Moving Mobs
+		
+		//+++Move theCircle
+		theCircle.move();
+		//--Finished moving theCircle
+		
+		//+++Updates scoreboard	
+		scoreboard.setNumber(squareCounter);
+		highscoreBoard.setNumber(highscore);
+		frameCounter.setNumber(fps);
+		//---Finished updateing scoreboard
+		
+		
+		//+++Clear the rendering surface.
+		//___This should always be called directly before redrawing the squares
+		glClear(GL_COLOR_BUFFER_BIT);
+		//---Finished clearing rendering surface
+
+		//+++Draws the Circle
+		colorShaderProgram.useProgram();
+		theCircle.bindData(colorShaderProgram);
+		positionObject(theCircle.getPosition().getX(),theCircle.getPosition().getY(),0);
+		colorShaderProgram.setUniforms(modelViewProjectionMatrix, Colors.CIRCLEBG);
+		theCircle.draw();
+		//---Finishes drawing the circle
+		
+		//+++Draws Squares	
+		colorShaderProgram.useProgram();
+		for(Square i : squareArmy){
+			i.bindData(colorShaderProgram);
+			positionObject(i.getPosition().getX(),i.getPosition().getY(),0);		
+			colorShaderProgram.setUniforms(modelViewProjectionMatrix, Colors.SQUARERED);
+			i.draw();
+		}
+		//---Finishes Drawing Squares
+		
+		//+++Draws Scoreboard	
+		textureShaderProgram.useProgram();
+		scoreboard.bindData(textureShaderProgram);
+		positionObject(scoreboard.getPosition().getX(),scoreboard.getPosition().getY(),0);		
+		textureShaderProgram.setUniforms(modelViewProjectionMatrix, scoreboard.getFont().getTexture());
+		scoreboard.draw();
+		//---Finishes Drawing Scoreboard
+			
+		
+		//+++Draws Scoreboard	
+		highscoreBoard.bindData(textureShaderProgram);
+		positionObject(highscoreBoard.getPosition().getX(),highscoreBoard.getPosition().getY(),0);		
+		textureShaderProgram.setUniforms(modelViewProjectionMatrix, highscoreBoard.getFont().getTexture());
+		highscoreBoard.draw();	
+		//---Finishes Drawing Scoreboard
+		
+		//+++Draws frameCounter	
+		frameCounter.bindData(textureShaderProgram);
+		positionObject(frameCounter.getPosition().getX(),frameCounter.getPosition().getY(),0);		
+		textureShaderProgram.setUniforms(modelViewProjectionMatrix, frameCounter.getFont().getTexture());
+		frameCounter.draw();	
+		//---Finishes Drawing framecounter
+					
+		
+	}
+
+	@Override
+	public void onSurfaceChanged(GL10 unused, int width, int height) {
+		//Sets the transformation from normalized openGL coordinates to the render window coordinates
+		//glViewport(left,bottom,right,top)
+		glViewport(0, 0, width, height);
+		
+		
+		//specifies the aspect ratio
+		//orthoM(matrix, offset, min-x, max-x, min-y, max-y, min-z, max-z)
+		final float aspectRatio = (float) height / (float) width;
+		
+		screenLeft = -1f*zoom;
+		screenRight = 1f*zoom;
+		screenBottom = -aspectRatio*zoom;
+		screenTop = aspectRatio*zoom;
+		
+		orthoM(projectionMatrix, 0, screenLeft, screenRight, screenBottom, screenTop, -1f, 1f);
+		Logger.loggerDebug(TAG, Arrays.toString(projectionMatrix));
+		//populates screen dimensions
+		screenWidth = 2 * zoom;
+		screenHeight = 2 * (aspectRatio*zoom);
+		Logger.loggerVerbose(TAG, "Width is :" + screenWidth);
+		Logger.loggerVerbose(TAG, "Height is :" + screenHeight);
+		
+		
+		//Initialized text boxes	
+		theOnlyFont = new Font(new Vec2(screenWidth/10, screenHeight/10), TextureHandler.loadTexture(context, R.drawable.numbers));
+		
+		scoreboard = new NumberBox(new Vec2(screenRight,screenBottom), 10, theOnlyFont);
+								  
+		
+		highscoreBoard = new NumberBox(new Vec2(screenRight,screenTop - (screenHeight/12)), 
+									   10, 
+									   new Font(new Vec2(screenWidth/10, screenHeight/12), TextureHandler.loadTexture(context, R.drawable.numbers))
+									  );
+		frameCounter = new NumberBox(new Vec2(screenRight,screenTop - (screenHeight/12)- (screenHeight/15)), 
+				   					 3, 
+				   					 new Font(new Vec2(screenWidth/15, screenHeight/15), TextureHandler.loadTexture(context, R.drawable.numbers))
+									 );
+								   
+	}
+
+	@Override
+	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+		highscore = preferences.getInt("highscore", 0);
+		
+		
+		//Sets background color to black
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		
+		//*************************************************
+		//******     Shader Creation goes here     ********
+		//*************************************************
+		
+		//Reads the 2d color shader from the text file and builds it,also sets it as our go to shader	
+		colorShaderProgram =  new ColorShader2DProgram(context,false);
+		
+		textureShaderProgram = new TextureShader2DProgram(context,true);
+		
+		
+		
+	}
+
+	private void positionObject(float x, float y, float z) {
+
+		//translationMatrix = projectionMatrix;
+		//translateM(translationMatrix, 0, x, y, z);
+		
+		setIdentityM(modelMatrix, 0);
+		translateM(modelMatrix, 0, x, y, z);
+		multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelMatrix, 0);
+	
+	}
+	
+	public void handleTouchPress(float normalizedX, float normalizedY){
+		theCircle.setTarget(new Vec2(normalizedX * screenRight , (normalizedY * screenTop) + FINGEROFFSET));
+		Logger.loggerVerbose(TAG, "setting Target : "+normalizedX * screenRight +"|"+((normalizedY * screenTop) + FINGEROFFSET));
+	}
+	
+	public void handleTouchDrag(float normalizedX, float normalizedY){
+		theCircle.setTarget(new Vec2(normalizedX * screenRight , (normalizedY * screenTop) + FINGEROFFSET));
+	}
+}

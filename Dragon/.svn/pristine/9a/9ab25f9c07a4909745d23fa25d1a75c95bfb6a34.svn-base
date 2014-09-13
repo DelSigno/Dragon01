@@ -1,0 +1,81 @@
+package com.dragon.android;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import android.content.Context;
+import android.os.Bundle;
+
+import com.dragon.android.framework.Game;
+import com.dragon.android.framework.InputListener;
+import com.dragon.android.framework.OrthoCamera;
+import com.dragon.android.objects.Background;
+import com.dragon.android.objects.DrawCollection;
+import com.dragon.android.objects.ExpandingDragon;
+import com.dragon.android.programs.ShaderProgram;
+import com.dragon.android.programs.TextureShader2DProgram;
+
+public class Dragon extends Game {
+	
+	
+	
+	//BACKGROUND
+	private Background background;
+	
+	//EXPANDINGDRAGON
+	private ExpandingDragon fredo;
+	
+	//PROGRAMS
+	private TextureShader2DProgram textureProgram;
+	
+	//************************Main Code Begins*********************************
+	
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		this.maxPointers = 1;
+		this.inputListener = new InputListener(maxPointers,this);
+	}
+
+	@Override
+	public void onDrawFrame(GL10 arg0) {
+		super.onDrawFrame(arg0);
+		
+	}
+
+	@Override
+	public void onSurfaceChanged(GL10 arg0, int width, int height) {
+		
+		camera = new OrthoCamera(width, height);
+		
+		//Initialize Backroud
+		background = new Background(this, camera.getSize(), textureProgram,R.drawable.background_paper_01);
+		drawList.add(background);
+		
+	}
+
+	@Override
+	public void onSurfaceCreated(GL10 arg0, EGLConfig arg1) {
+		super.onSurfaceCreated(arg0,arg1);
+		
+		//Initialize fredo the dragon
+		fredo = new ExpandingDragon();
+				
+		//Initialize programs
+		textureProgram = new TextureShader2DProgram(this, true);	
+		
+		
+		
+		
+		
+	}
+
+	@Override
+	public void onHear() {
+		
+		
+	}
+	
+	
+
+}

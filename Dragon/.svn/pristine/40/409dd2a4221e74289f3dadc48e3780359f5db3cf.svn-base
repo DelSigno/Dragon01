@@ -1,0 +1,34 @@
+package com.dragon.android.objects;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.util.TextureHandler;
+
+import android.content.Context;
+
+public class Background implements DrawCollection {
+
+	private int texture;
+	
+	public Background(Context context, int resourceId){
+		texture = TextureHandler.loadTexture(context, resourceId);
+		TextureHandler.setPrettySettings(texture);
+		
+	}
+	
+	public void setSize(Vec2 bL, Vec2 uR){
+		
+	}
+	
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

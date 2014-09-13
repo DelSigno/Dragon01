@@ -1,0 +1,5 @@
+package com.dragon.android.framework;
+
+public interface Hearer {
+	public void onHear();
+}

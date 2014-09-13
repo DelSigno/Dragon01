@@ -1,0 +1,52 @@
+package com.dragon.android;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import com.dragon.android.framework.Game;
+import com.dragon.android.framework.OrthoCamera;
+import com.dragon.android.objects.Background;
+import com.dragon.android.objects.DrawCollection;
+import com.dragon.android.objects.ExpandingDragon;
+
+public class Dragon extends Game {
+	
+	//CAMERA
+	private OrthoCamera camera;
+	
+	//BACKGROUND
+	private Background background;
+	
+	//EXPANDINGDRAGON
+	private ExpandingDragon fredo;
+	
+	public Dragon() {
+		super(1);
+	}
+
+	@Override
+	public void onDrawFrame(GL10 arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSurfaceChanged(GL10 arg0, int width, int height) {
+		camera = new OrthoCamera(1, width, height);
+		
+	}
+
+	@Override
+	public void onSurfaceCreated(GL10 arg0, EGLConfig arg1) {
+		fredo = new ExpandingDragon();
+		
+		
+	}
+
+	@Override
+	public void onHear() {
+		
+		
+	}
+
+}

@@ -1,0 +1,72 @@
+package com.circleavoidthesquares.android.hud;
+
+import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glDrawArrays;
+
+import com.circleavoidthesquares.android.data.Vec2;
+import com.circleavoidthesquares.android.objects.Drawable;
+import com.circleavoidthesquares.android.programs.ShaderProgram;
+import com.circleavoidthesquares.android.programs.TextureShader2DProgram;
+import com.circleavoidthesquares.android.util.Font;
+import com.circleavoidthesquares.android.util.NumberHandler;
+
+public class NumberBox implements Drawable{
+	
+	//SETTINGS
+	private boolean lsbJustify = true; //for now we only justify to least sig bit
+	private boolean zeroOut = true;//Will determine whether or not we show leading zeros
+	
+	
+	
+	//INITIAL PARAMETERS
+	private Vec2 letterSize;
+	private Vec2 position;//position of the bottom right of the LSB
+	private final Font font;
+	private int length;//how many digits our number is
+	
+	//NUMBER
+	private int number;
+	
+	
+	//COMPONENT COUNTING THINGS
+	private static final int POSITION_COMPONENT_COUNT = 2;
+	private static final int BYTES_PER_FLOAT = 4;
+	private static final int STRIDE = POSITION_COMPONENT_COUNT * BYTES_PER_FLOAT;
+	private static int VERTEX_PER_NUMBER = 6;
+	
+	
+	
+	public NumberBox(Vec2 position, int length, Font font){
+		this.position = position;
+		this.length = length;	
+		this.font = font;	
+		this.letterSize = font.getLetterSize();
+		this.number = 0;
+
+	}
+	
+	public void setNumber(int newNumber){
+		number = newNumber;
+	}
+	
+	public void bindData(TextureShader2DProgram program){
+		//loads appropriate vertex information into openGL
+		NumberHandler.generateDigitVertexArray(letterSize, length).setVertexAttribPointer(0, program.getPositionAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+		NumberHandler.generateTextureVertexArray(number, length).setVertexAttribPointer(0, program.getTextureCoordinatesAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+
+	}
+
+	@Override
+	public void draw() {
+		glDrawArrays(GL_TRIANGLES, 0, (length * VERTEX_PER_NUMBER));
+		
+	}
+
+	public Vec2 getPosition(){
+		return position;
+	}
+	
+	public Font getFont(){
+		return font;
+	}
+}

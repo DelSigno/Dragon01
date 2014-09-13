@@ -1,0 +1,16 @@
+package com.circleavoidthesquares.android.util;
+
+import static android.opengl.Matrix.multiplyMM;
+import static android.opengl.Matrix.setIdentityM;
+import static android.opengl.Matrix.translateM;
+
+public class MatrixHandler {
+	
+	private static final String TAG = "MatrixHandler" ;
+	
+	private static void normalize(){
+		
+	}
+	
+	
+}

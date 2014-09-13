@@ -1,0 +1,186 @@
+package com.dragon.android.framework;
+
+import static android.opengl.GLES20.glViewport;
+import static android.opengl.GLES20.*;
+import static android.opengl.Matrix.orthoM;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import com.dragon.android.util.Logger;
+import com.dragon.android.data.Vec2;
+import com.dragon.android.hud.Text;
+import com.dragon.android.objects.DrawCollection;
+
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.ConfigurationInfo;
+import android.opengl.GLSurfaceView;
+import android.opengl.GLSurfaceView.Renderer;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.widget.Toast;
+
+public abstract class Game extends Activity implements Renderer, Hearer {
+	
+	private static String TAG = "Game";
+
+	//SURFACE and RENDERERS
+	protected GLSurfaceView glSurfaceView;
+	protected boolean rendererSet = false;
+	
+	//INPUTLISTENERANDSHIT
+	protected InputListener inputListener;
+	protected int maxPointers;
+	
+	//SCREEN
+	protected float screenLeft;
+	protected float screenRight;
+	protected float screenBottom;
+	protected float screenTop;
+	
+	//DRAWLIST
+	protected ArrayList<DrawCollection> drawList;
+	
+	//TIMERS
+	protected long endTime;
+	protected long dt;
+	protected long startTime;
+	protected long fpsEndTime;
+	protected long fpsStartTime;
+	protected int fps;
+	
+	
+	//CAMERA
+	protected OrthoCamera camera;
+	
+	
+	//************************Main Code Begins*********************************
+	
+		
+
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		
+		glSurfaceView = new GLSurfaceView(this);
+		
+		//Gets device of emulator info and sets up check to ensure
+		//OpenGL2.0 Compatible
+		final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();	
+		final boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x20000 
+				|| (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1
+				&& (Build.FINGERPRINT.startsWith("generic")
+				|| Build.FINGERPRINT.startsWith("unknown")
+				|| Build.MODEL.contains("google_sdk")
+				|| Build.MODEL.contains("Emulator")
+				|| Build.MODEL.contains("Android SDK built for x86")));
+		
+		
+		if (supportsEs2) {
+			// Request an OpenGL ES 2.0 compatible context.
+			glSurfaceView.setEGLContextClientVersion(2);
+			// Assign our renderer.
+			glSurfaceView.setRenderer(this);
+			rendererSet = true;
+		} else {
+			Toast.makeText(this, "This device does not support OpenGL ES 2.0.",
+			Toast.LENGTH_LONG).show();
+			return;
+		}
+		
+		//+++Sends touch commands to the glSurfaceView
+		glSurfaceView.setOnTouchListener(inputListener);	
+		//---Finish sending in touch commands to glSurfaceView
+		
+		//This is the number of things that are to be declared before the background as drawable
+		//its a convience and probably bad programming but change it if needed.
+		drawList = new ArrayList<DrawCollection>(10);
+		
+		setContentView(glSurfaceView);
+	}
+	
+	@Override
+	public void onSurfaceChanged(GL10 unused, int width, int height) {
+		
+								   
+	}
+	
+	@Override
+	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+		//Sets background color to black
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		
+	}
+	
+	@Override
+	public void onDrawFrame(GL10 arg0) {
+		//***Limits frame rate to 60fps***
+		endTime = System.currentTimeMillis();
+	    dt = endTime - startTime;
+	    
+	    if (dt < 17)
+			try {
+				Thread.sleep((long)(17 - dt),7);
+			} catch (InterruptedException e) {
+				Logger.loggerDebug(TAG, "Failed To sleep!");
+				e.printStackTrace();
+			}
+	    startTime = System.currentTimeMillis();
+	    //***Finished limiting framerate***  
+	    //+++Framerate counter
+	    fpsEndTime = System.currentTimeMillis();
+	    fps = (int)(1000/(fpsEndTime-fpsStartTime));
+	    fpsStartTime = System.currentTimeMillis();
+	    //--end of framerate counter
+	    
+	    
+	    //+++Input
+	    this.onHear(inputListener.getActions());
+	    //--End input
+	    
+		//+++Main draw loop for drawing all DrawCollection
+	    //Logger.loggerVerbose(TAG, "Beggining draw operation");
+		int drawListIterator = 0;
+		while(drawList.size() > drawListIterator){
+			drawList.get(drawListIterator).bindData(camera);
+			drawList.get(drawListIterator).draw();
+			drawListIterator++;
+		}
+		//---Finished Main draw loop for drawing all DrawCollection
+		
+	}
+	
+	@Override
+	protected void onPause(){
+		super.onPause();
+		if (rendererSet){
+			glSurfaceView.onPause();
+		}
+	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		if (rendererSet){
+			glSurfaceView.onResume();
+		}
+	}
+	
+	public void addToDrawList(DrawCollection newDrawCollection,int position){
+		
+	}
+	
+	
+
+}

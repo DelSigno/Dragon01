@@ -1,0 +1,32 @@
+package com.circleavoidthesquares.android.util;
+
+import com.circleavoidthesquares.android.data.Vec2;
+
+
+//Font currently only supports numbers
+//this will eventually handle a bunch of shit
+//This also only contains setting for blocky text. More fonts more setting and what have you
+public class Font {
+	
+	private Vec2 letterSize;
+	private int texture;
+	
+	public Font(Vec2 letterSize, int texture){
+		this.letterSize = letterSize;
+		this.texture = texture;	
+		
+		//This shouldn't be constant
+		TextureHandler.setBlockySettings(texture);
+		
+	}
+	
+	public Vec2 getLetterSize(){
+		return letterSize;
+	}
+	
+	public int getTexture(){
+		return texture;
+	}
+	
+	
+}

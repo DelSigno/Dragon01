@@ -1,0 +1,42 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+import android.content.Context;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.framework.OrthoCamera;
+import com.dragon.android.programs.TextureShader2DProgram;
+
+public class ExpandingDragon implements DrawCollection {
+	
+	private LinkedList<Drawable> bodyNodes = new LinkedList<Drawable>();
+	private DragonHead head;
+	
+	public ExpandingDragon(Context context, TextureShader2DProgram program){
+		this.head = new DragonHead(context, program);
+	}
+	
+	public boolean setTargeting(boolean nTarg){
+		return head.setTargeting(nTarg);
+		
+	}
+	
+	public void setTarget(Vec2 nTarg){
+		head.setTarget(nTarg);
+	}
+	
+	@Override
+	public void draw() {
+		head.draw();
+
+	}
+
+	@Override
+	public void bindData(OrthoCamera camera) {
+		head.bindData(camera);
+		
+	}
+
+}

@@ -1,0 +1,41 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+import android.content.Context;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.framework.OrthoCamera;
+
+public class ExpandingDragon implements DrawCollection {
+	
+	private LinkedList<Drawable> bodyNodes = new LinkedList<Drawable>();
+	private DragonHead head;
+	
+	public ExpandingDragon(Context context){
+		this.head = new DragonHead(context);
+	}
+	
+	public boolean setTargeting(boolean nTarg){
+		return head.setTargeting(nTarg);
+		
+	}
+	
+	public void setTarget(Vec2 nTarg){
+		head.setTarget(nTarg);
+	}
+	
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData(OrthoCamera camera) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

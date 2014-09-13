@@ -1,0 +1,77 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.framework.OrthoCamera;
+
+public class ExpandingDragon implements DrawCollection {
+	
+	private ArrayList<Drawable> bodyNodes = new ArrayList<Drawable>();
+	private DrawCollection head = new DrawCollection(){
+		
+		//PROPERTIES
+		private float direction = 0.0f;
+		private Vec2 position = new Vec2(0,0);
+		
+		//STATICS
+		private static final float SPEED = 1.0f;
+		private static final float TURN_SPEED = 0.05f;
+		
+		//MOVEMENT
+		private boolean targeting = false;
+		private Vec2 target = new Vec2(0,0);
+
+
+		public void setDirection(float nDir){
+			direction = nDir;
+		}
+		
+		public void setTarget(Vec2 nTarg){
+			target = nTarg;
+		}
+		
+		public void updatePos(){
+			
+			if (targeting) {
+				 if (position.getDirectionTo(target).getAngle() < direction){
+					 direction -= TURN_SPEED;
+				 }else if (position.getDirectionTo(target).getAngle() > direction){
+					 direction += TURN_SPEED;
+				 }
+			}
+			
+			position.moveAngle(SPEED, direction);
+					
+		}
+
+		@Override
+		public void draw() {
+			// TODO Auto-generated method stub
+			
+		}
+
+
+		@Override
+		public void bindData(OrthoCamera camera) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	};
+	
+	
+	
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData(OrthoCamera camera) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

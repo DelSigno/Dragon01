@@ -1,0 +1,72 @@
+package com.dragon.android.hud;
+
+import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glDrawArrays;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.fonts.Font;
+import com.dragon.android.objects.Drawable;
+import com.dragon.android.programs.ShaderProgram;
+import com.dragon.android.programs.TextureShader2DProgram;
+import com.dragon.android.util.NumberHandler;
+
+public class NumberBox implements Drawable{
+	
+	//SETTINGS
+	private boolean lsbJustify = true; //for now we only justify to least sig bit
+	private boolean zeroOut = true;//Will determine whether or not we show leading zeros
+	
+	
+	
+	//INITIAL PARAMETERS
+	private Vec2 letterSize;
+	private Vec2 position;//position of the bottom right of the LSB
+	private final Font font;
+	private int length;//how many digits our number is
+	
+	//NUMBER
+	private int number;
+	
+	
+	//COMPONENT COUNTING THINGS
+	private static final int POSITION_COMPONENT_COUNT = 2;
+	private static final int BYTES_PER_FLOAT = 4;
+	private static final int STRIDE = POSITION_COMPONENT_COUNT * BYTES_PER_FLOAT;
+	private static int VERTEX_PER_NUMBER = 6;
+	
+	
+	
+	public NumberBox(Vec2 position, int length, Font font){
+		this.position = position;
+		this.length = length;	
+		this.font = font;	
+		this.letterSize = font.getLetterSize();
+		this.number = 0;
+
+	}
+	
+	public void setNumber(int newNumber){
+		number = newNumber;
+	}
+	
+	public void bindData(TextureShader2DProgram program){
+		//loads appropriate vertex information into openGL
+		NumberHandler.generateDigitVertexArray(letterSize, length).setVertexAttribPointer(0, program.getPositionCoordinatesAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+		NumberHandler.generateTextureVertexArray(number, length).setVertexAttribPointer(0, program.getTextureCoordinatesAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+
+	}
+
+	@Override
+	public void draw() {
+		glDrawArrays(GL_TRIANGLES, 0, (length * VERTEX_PER_NUMBER));
+		
+	}
+
+	public Vec2 getPosition(){
+		return position;
+	}
+	
+	public Font getFont(){
+		return font;
+	}
+}

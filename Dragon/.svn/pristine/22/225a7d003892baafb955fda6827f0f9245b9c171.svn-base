@@ -1,0 +1,39 @@
+package com.dragon.android.objects;
+
+import java.util.ArrayList;
+
+import com.dragon.android.framework.OrthoCamera;
+
+public class ExpandingDragon implements DrawCollection {
+	
+	private ArrayList<Drawable> bodyNodes = new ArrayList<Drawable>();
+	private DrawCollection head = new DrawCollection(){
+
+		@Override
+		public void draw() {
+			// TODO Auto-generated method stub
+			
+		}
+
+
+		@Override
+		public void bindData(OrthoCamera camera) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	};
+	
+	@Override
+	public void draw() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void bindData(OrthoCamera camera) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

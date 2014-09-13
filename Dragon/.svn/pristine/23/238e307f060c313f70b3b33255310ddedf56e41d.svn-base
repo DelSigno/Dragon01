@@ -1,0 +1,110 @@
+package com.dragon.android.framework;
+
+import static android.opengl.GLES20.*;
+import static android.opengl.Matrix.*;
+import android.view.MotionEvent;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.framework.InputActions.Press;
+import com.dragon.android.framework.InputActions.Release;
+
+
+public class OrthoCamera {
+
+	//MATRICIES
+	private float[] modelMatrix = new float[16]; //Used for translations
+	private final float[] projectionMatrix = new float[16]; //Stores the proverbial camera
+	private float[] translationMatrix = new float[16]; //Used for translations...again
+	private float[] modelViewProjectionMatrix = new float[16]; //used to store result of camera after translation
+
+	
+	//CAMERADIMENSIONS
+	private float screenLeft;
+	private float screenRight;
+	private float screenBottom;
+	private float screenTop;
+	private float aspectRatio;
+	
+	public OrthoCamera(int type, int width, int height){
+		
+		//Sets the transformation from normalized openGL coordinates to the render window coordinates
+		//glViewport(left,bottom,right,top)
+		glViewport(0, 0, width, height);
+		//specifies the aspect ratio
+		//orthoM(matrix, offset, min-x, max-x, min-y, max-y, min-z, max-z)
+		aspectRatio = (float) height / (float) width;
+			
+		screenLeft = -1f;
+		screenRight = 1f;
+		screenBottom = -aspectRatio;
+		screenTop = aspectRatio;	
+		orthoM(projectionMatrix, 0, screenLeft, screenRight, screenBottom, screenTop, -1f, 1f);
+  
+	}
+	
+	//The default zoom is one
+	public void setZoom(float amount){
+		screenLeft = -amount;
+		screenRight = amount;
+		screenBottom = -amount*aspectRatio;
+		screenTop = amount*aspectRatio;
+		orthoM(projectionMatrix, 0, screenLeft, screenRight, screenBottom, screenTop, -1f, 1f);	
+	}
+	
+	public void zoom(float amount){
+		screenLeft *= amount;
+		screenRight *= amount;
+		screenBottom *= amount;
+		screenTop *= amount;
+		orthoM(projectionMatrix, 0, screenLeft, screenRight, screenBottom, screenTop, -1f, 1f);	
+	}
+	
+	//Returns a camera positioned to specific object
+	public float[] postitionToObject(float x, float y, float z) {
+
+		//translationMatrix = projectionMatrix;
+		//translateM(translationMatrix, 0, x, y, z);
+		setIdentityM(modelMatrix, 0);
+		translateM(modelMatrix, 0, x, y, z);
+		multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelMatrix, 0);
+		
+		return modelViewProjectionMatrix;
+	}
+	
+	//Moves camera to a specific location
+	public void setCameraPos(float x, float y, float z) {
+
+		setIdentityM(modelMatrix, 0);
+		translateM(modelMatrix, 0, -x, -y, -z);
+		multiplyMM(projectionMatrix, 0, projectionMatrix, 0, modelMatrix, 0);
+		
+	}
+	
+	public void moveCamera(float x, float y, float z) {
+
+		translateM(modelMatrix, 0, x, y, z);
+		
+	}
+	
+	public float[] getCamera(){
+		return projectionMatrix;
+	}
+	
+	public float getBottom(){
+		return screenBottom;
+	}
+	
+	public float getTop(){
+		return screenTop;
+	}
+	
+	public float getLeft(){
+		return screenLeft;
+	}
+	
+	public float getRight(){
+		return screenRight;
+	}
+	
+}
+

@@ -1,0 +1,87 @@
+package com.dragon.android.objects;
+
+
+import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glDrawArrays;
+
+import com.dragon.android.data.Vec2;
+import com.dragon.android.data.VertexArray;
+import com.dragon.android.programs.ColorShader2DProgram;
+import com.dragon.android.programs.ShaderProgram;
+import com.dragon.android.util.Colors;
+import com.dragon.android.util.Logger;
+
+public class Square implements Drawable{
+	
+	//TAG
+	private static final String TAG = "Square";
+	
+	//VECTORS
+	private Vec2 position;
+	private Vec2 velocity;
+	private Vec2 acceleration;
+	
+	//PROPERTIES
+	private float radius;
+	private static final float RENDERLEVEL = 0.0f;
+	private static final int POSITION_COMPONENT_COUNT = 2;
+	private static final int BYTES_PER_FLOAT = 4;
+	private static final int STRIDE = POSITION_COMPONENT_COUNT * BYTES_PER_FLOAT;
+	
+	//COLOR
+	private float[] color = Colors.RED;
+	
+	//VERTEX
+	private final float[] vertexData;
+	private final VertexArray vertexArray;
+	
+	public Square(Vec2 iPos,Vec2 iVel,Vec2 iAcc,float radius){
+		
+		//Assigns basic movement properties
+		this.position = iPos;
+		this.velocity = iVel;
+		this.acceleration = iAcc;
+		this.radius = radius;
+		
+		
+		//Builds shape
+		vertexData = new float[] {-radius, -radius,
+					  			  radius, -radius,
+					  			  radius, radius,
+					  			  -radius, -radius,
+					  			  radius, radius,
+					  			  -radius, radius};
+		
+		vertexArray = new VertexArray(vertexData);
+	}
+	
+	
+	public void move(){
+		position.move(velocity);
+		velocity.move(acceleration);	
+	}
+
+	
+	public void bindData(ShaderProgram program){
+		//loads appropriate vertex information into openGL
+		vertexArray.setVertexAttribPointer(0, program.getPositionAttributeLocation(), POSITION_COMPONENT_COUNT, STRIDE);
+	}
+	
+	@Override
+	public void draw() {
+		
+		//glDrawArrays(int w/e, offset, numberofverticies)
+		//Logger.loggerVerbose(TAG, "Running glDrawArrays");
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
+	}
+	
+	public Vec2 getPosition(){
+		return position;
+	}
+	
+	public float getRL(){
+		return RENDERLEVEL;
+	}
+
+}
